@@ -7,4 +7,4 @@ After creation and opening of container, go (cd) to root project directory and r
 There is written creation of Parcels, Containers and Transport instances.
 After that script will run a Transport method, where will be done calculations of the best option of package parcels to containers.
 
-<img src="emendisAssignment/containerCombinationsExplanation.jpeg" alt="explanation"/>
+<img src="emendisAssignment/containerCombinationsExplanation.jpeg" alt="explanation"/> or https://github.com/lorik-balorik/containerCalculation/blob/master/containerCombinationsExplanation.jpeg
