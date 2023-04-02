@@ -1,0 +1,7 @@
+services:
+    php:
+        build: ./php
+        volumes:
+            - ./../project:/var/www/project
+        working_dir: /var/www/project
+        command: tail -F anything

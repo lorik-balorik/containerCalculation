@@ -1,0 +1,28 @@
+#!/bin/bash
+
+cd docker
+
+detach=''
+toBash=0
+
+if [ ! -z "$1" ] 
+then
+    if [ "$1" = "-d" ] 
+    then
+        detach="-d"
+    elif [ "$1" = "-b" ] 
+    then
+        detach="-d"
+        toBash=1
+    else
+        echo -e "Usage:\n./start {param}\n\nParameters:\n-d - --detach\n-b - go to bash\n? - show help without starting container"
+        exit
+    fi
+fi
+
+docker-compose up $detach
+
+if [ "$toBash" -gt 0 ] 
+then
+    docker-compose exec php bash
+fi
