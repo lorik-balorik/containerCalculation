@@ -32,43 +32,8 @@ class PackagingCalculationClass {
 
         return $containerFitIds;
     }
-    public function setTheMostOptimalPackage( array $parcels, array $containers ) {
-        if( empty( $variationsOfPackages = $this->getVariationsOfPackage( $parcels, $containers ) ) ) {
-            return false;
-        }
 
-        $bestOptionVal = null;
-        $bestOptionDescription = '';
-
-        foreach( $variationsOfPackages as $package ) {
-            $currentOptionVal = null;
-            $currentOptionDescription = '';
-
-            foreach( $package as $usedContainerId => $usedContainer ) {
-
-                /**
-                 * Get ratio of taken space on a boat (united area of containers) and fullness (united areas of used space in containers)
-                 * space:fullness
-                 */
-                $countContainers = ceil( $usedContainer ); // if we use even only a part of the container, we round fractions up. Ex: usage of 0.5 of the container means that we already use 1 container.
-                $ratio = ( $containers[ $usedContainerId ] * $countContainers ) / ( $containers[ $usedContainerId ] * $usedContainer );
-
-                $currentOptionVal += $ratio;
-                $currentOptionDescription .= "$countContainers containers with id: $usedContainerId; ";
-
-                if ( ( $bestOptionVal == null || $bestOptionVal > $currentOptionVal )
-                     && $usedContainerId == array_key_last( $package ) ) {
-
-                    $bestOptionVal = $currentOptionVal;
-                    $bestOptionDescription = $currentOptionDescription;
-                }
-            }
-        }
-
-        return $bestOptionDescription;
-    }
-
-    private function getVariationsOfPackage( array $parcelsAreas, array $containersAreas ) {
+    public function getTheMostOptimalPackage( array $parcelsAreas, array $containersAreas ) {
         if( !$this->checkIfDataIsValid( $parcelsAreas, $containersAreas ) ) {
             return false;
         }
@@ -77,38 +42,61 @@ class PackagingCalculationClass {
         $countParcels = sizeof($parcelsAreas); // exponent
         $finalSize = pow( $countContainers, $countParcels ); // final number of variations of permutations
 
-        // To prevent memory overflow
-        if( $finalSize > 1000000 ) {
-            print("Too many options.\n\nWe'll do reduction\n\n");
-            $finalSize = 1000000;
-        }
-
-        $usedContainers = [];
+        $bestOptionVal = null;
+        $bestOptionDescription = '';
+        $packageOptions = [];
         for ( $i = 0; $i < $finalSize; $i++ ) {
+            $currentOptionVal = null;
+            $currentOptionDescription = '';
+//            $currentOptionParcelPlacing = '';
+
             for ( $c = 0; $c < $countParcels; $c++ ) {
                 $index = ceil( $i / pow( $countContainers, $c ) ) % $countContainers;
 
-                // if we can put this parcel in a container with this index
                 if( isset( $parcelsAreas[ $c ][ $index ] ) ) {
 
                     // if we already put number of taken space in a container, we sum those numbers
-                    if( array_key_exists( $i, $usedContainers ) && array_key_exists( $index, $usedContainers[ $i ] ) ) {
-                        $usedContainers[ $i ][ $index ] += $parcelsAreas[ $c ][ $index ];
+                    if( array_key_exists( $i, $packageOptions ) && array_key_exists( $index, $packageOptions[ $i ] ) ) {
+                        $packageOptions[ $i ][ $index ] += $parcelsAreas[ $c ][ $index ];
                     } else {
-                        $usedContainers[ $i ][ $index ] = $parcelsAreas[ $c ][ $index ];
+                        $packageOptions[ $i ][ $index ] = $parcelsAreas[ $c ][ $index ];
                     }
+
+                    // if use printing of parcel's placing in which container, provide time latency
+
+//                    $currentOptionParcelPlacing = "parcel with parcelId: $c in container with id: $index;\n\n";
                 } else {
-                    $usedContainers[ $i ][ $index ] = null;
+                    $packageOptions[ $i ][ $index ] = null;
                 }
             }
 
-            // filter impossible variants => if we couldn't put big parcel in small container
-            if( in_array( null, $usedContainers[ $i ] ) ) {
-                unset( $usedContainers[ $i ] );
+            if( !in_array( null, $packageOptions[ $i ] ) ) { // don't do for impossible variants => if we couldn't put big parcel in small container
+                foreach( $packageOptions[ $i ] as $usedContainerId => $usedContainer ) {
+
+                    /**
+                     * Get ratio of taken space on a boat (united area of containers) and fullness (united areas of used space in containers)
+                     * space:fullness
+                     */
+                    $countContainers = ceil( $usedContainer ); // if we use even only a part of the container, we round fractions up. Ex: usage of 0.5 of the container means that we already use 1 container.
+                    $ratio = ( $containersAreas[ $usedContainerId ] * $countContainers ) / ( $containersAreas[ $usedContainerId ] * $usedContainer );
+
+                    $currentOptionVal += $ratio;
+                    $currentOptionDescription .= "$countContainers containers with id: $usedContainerId; ";
+
+                    if ( ( $bestOptionVal == null || $bestOptionVal > $currentOptionVal )
+                        && $usedContainerId == array_key_last( $packageOptions[ $i ] ) ) {
+
+                        $bestOptionVal = $currentOptionVal;
+                        $bestOptionDescription = $currentOptionDescription . " optionId is: $i;\n\n"; // . $currentOptionParcelPlacing;
+                    }
+                }
             }
+
+            // unset checked option to prevent memory leak
+            unset( $packageOptions[ $i ] );
         }
 
-        return $usedContainers;
+        return $bestOptionDescription;
     }
 
     private function checkIfDataIsValid( $parcelsData, $containersData ): bool {

@@ -13,6 +13,7 @@ class TransportClass {
     private PackagingCalculationClass $calculation;
     public array $containers = [];
     public array $containersAreas = [];
+    public array $parcels = [];
     public array $parcelsWithSpaceToTake;
 
     public function __construct( PackagingCalculationClass $calculation) {
@@ -39,6 +40,7 @@ class TransportClass {
                 echo("Sorry, at the moment we can't transport a parcel with such dimensions (width: {$parcelDimensions['width']}, length: {$parcelDimensions['length']}).  
 We'll call you back as soon, as we find a way to do that\n\n");
             } else {
+                $this->parcels[] = $newParcel;
                 $this->parcelsWithSpaceToTake[] = array_fill( 0, sizeof( $this->containers ), null );
                 $parcelId = array_key_last( $this->parcelsWithSpaceToTake );
 
@@ -55,12 +57,12 @@ We'll call you back as soon, as we find a way to do that\n\n");
         }
     }
 
-    public function arrangePackageInContainers() {
+    public function arrangePackageInContainers(): bool {
         if( !isset( $this->parcelsWithSpaceToTake ) || !isset( $this->containersAreas ) ) {
             return false;
         }
 
-        if( empty( $packageVariant = $this->calculation->setTheMostOptimalPackage( $this->parcelsWithSpaceToTake, $this->containersAreas ) ) ) {
+        if( empty( $packageVariant = $this->calculation->getTheMostOptimalPackage( $this->parcelsWithSpaceToTake, $this->containersAreas ) ) ) {
             echo("Couldn't arrange packaging\n\n");
 
             return false;
@@ -70,6 +72,13 @@ We'll call you back as soon, as we find a way to do that\n\n");
             $dimensions = join( '*', $container->getDimensions() );
             $packageVariant = str_replace( "id: $containerId", "dimensions: $dimensions", $packageVariant );
         }
+
+        // if use printing of parcel's placing in which container, provide time latency
+
+//        foreach( $this->parcels as $parcelId => $parcel ) {
+//            $dimensions = join( '*', $parcel->getDimensions() );
+//            $packageVariant = str_replace( "parcelId: $parcelId", "dimensions: $dimensions, type: {$parcel->getType()},", $packageVariant );
+//        }
 
         echo( $packageVariant . "\n\n" );
 

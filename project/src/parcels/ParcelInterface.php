@@ -17,5 +17,6 @@ interface ParcelInterface {
     public function calcArea(): int;
 
     public function getDimensions(): array;
+    public function getType(): string;
 
 }

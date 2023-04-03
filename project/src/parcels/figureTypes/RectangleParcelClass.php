@@ -13,10 +13,12 @@ require ( str_replace( 'figureTypes', 'BaseParcelClass.php', __DIR__  ) );
 class RectangleParcelClass extends BaseParcelClass {
     private int $width;
     private int $length;
+    private string $type;
 
-    public function __construct($width, $length) {
+    public function __construct( $width, $length, $type ) {
         $this->width = $width;
         $this->length = $length;
+        $this->type = $type;
     }
 
     /**
@@ -33,6 +35,10 @@ class RectangleParcelClass extends BaseParcelClass {
             'width' => $this->width,
             'length' => $this->length
         ];
+    }
+
+    public function getType(): string {
+        return $this->type;
     }
 }
 

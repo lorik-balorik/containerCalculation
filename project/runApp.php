@@ -28,9 +28,9 @@ echo("Transport 1\n\n");
 $transport1 = new TransportClass( new PackagingCalculationClass );
 $transport1->setNewContainers( $smallContainer, $bigContainer );
 $transport1->setNewParcels(
-    new CircleParcelClass(50),
-    new CircleParcelClass(50),
-    new RectangleParcelClass(100, 100),
+    new CircleParcelClass(50, 'circle'),
+    new CircleParcelClass(50, 'circle'),
+    new RectangleParcelClass(100, 100, 'square'),
 );
 $transport1->arrangePackageInContainers();
 
@@ -38,8 +38,8 @@ echo("Transport 2\n\n");
 $transport2 = new TransportClass( new PackagingCalculationClass );
 $transport2->setNewContainers( $smallContainer, $bigContainer );
 $transport2->setNewParcels(
-    new RectangleParcelClass(400, 400),
-    new CircleParcelClass(100),
+    new RectangleParcelClass(400, 400, 'square'),
+    new CircleParcelClass(100, 'circle'),
 );
 $transport2->arrangePackageInContainers();
 
@@ -48,9 +48,9 @@ echo("Transport 3\n\n");
 $transport3 = new TransportClass( new PackagingCalculationClass );
 $transport3->setNewContainers( $smallContainer, $bigContainer );
 $transport3->setNewParcels(
-    new RectangleParcelClass(150, 100),
-    new RectangleParcelClass(50, 50),
-    new CircleParcelClass(50),
+    new RectangleParcelClass(150, 100, 'rectangle'),
+    new RectangleParcelClass(50, 50, 'square'),
+    new CircleParcelClass(50, 'circle'),
 );
 $transport3->arrangePackageInContainers();
 

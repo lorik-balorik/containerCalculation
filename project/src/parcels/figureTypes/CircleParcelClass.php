@@ -10,9 +10,11 @@ use src\parcels\BaseParcelClass;
 
 class CircleParcelClass extends BaseParcelClass {
     private int $radius;
+    private string $type;
 
-    public function __construct($radius) {
+    public function __construct( $radius, $type ) {
         $this->radius = $radius;
+        $this->type = $type;
     }
 
     /**
@@ -33,5 +35,9 @@ class CircleParcelClass extends BaseParcelClass {
             'width' => $this->radius * 2,
             'length' => $this->radius * 2
         ];
+    }
+
+    public function getType(): string {
+        return $this->type;
     }
 }
