@@ -1,10 +1,6 @@
 <?php
 /**
  * Created by lorik.
- *
- * Because the problem is about applying combinatorics theory (permutations with repeats), don't put enormous number of either containers and parcels.
- * Ex: 4 containers' types and 11 parcels => 4^11 => 4,194,304 variants
- *
  */
 
 require( __DIR__ . '/src/transports/TransportClass.php' );
