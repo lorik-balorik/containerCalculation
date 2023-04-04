@@ -14,7 +14,7 @@ class TransportClass {
     public array $containers = [];
     public array $containersAreas = [];
     public array $parcels = [];
-    public array $parcelsWithSpaceToTake;
+    public array $parcelsWithSpaceToTake = [];
 
     public function __construct( PackagingCalculationClass $calculation) {
         $this->calculation = $calculation;
@@ -38,11 +38,11 @@ class TransportClass {
 
             if( empty( $containerFitIds ) ) {
                 echo("Sorry, at the moment we can't transport a parcel with such dimensions (width: {$parcelDimensions['width']}, length: {$parcelDimensions['length']}).  
-We'll call you back as soon, as we find a way to do that\n\n");
+We'll call you back as soon, as we find a way to do that.\n
+Do check for other parcel.\n\n");
             } else {
                 $this->parcels[] = $newParcel;
-                $this->parcelsWithSpaceToTake[] = array_fill( 0, sizeof( $this->containers ), null );
-                $parcelId = array_key_last( $this->parcelsWithSpaceToTake );
+                $parcelId = array_key_last( $this->parcels );
 
                 foreach( $containerFitIds as $id ) {
                     $parcelArea = $newParcel->calcArea();
@@ -73,8 +73,7 @@ We'll call you back as soon, as we find a way to do that\n\n");
             $packageVariant = str_replace( "id: $containerId", "dimensions: $dimensions", $packageVariant );
         }
 
-        // if use printing of parcel's placing in which container, provide time latency
-
+        /** If you use printing of parcel's placing in which container; provide time latency */
 //        foreach( $this->parcels as $parcelId => $parcel ) {
 //            $dimensions = join( '*', $parcel->getDimensions() );
 //            $packageVariant = str_replace( "parcelId: $parcelId", "dimensions: $dimensions, type: {$parcel->getType()},", $packageVariant );

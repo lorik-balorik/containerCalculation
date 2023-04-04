@@ -7,23 +7,23 @@ namespace src\calculations;
 
 class PackagingCalculationClass {
 
+    /**
+     * If parcel's dimensions don't fit container's dimensions, even if the calculated aria is suitable,
+     * don't create this parcel for the transport.
+     *
+     * For example, if the length of the parcel will be bigger than container's both width and length,
+     * we can't put it inside container.
+     */
     public function checkParcelsDimensions( array $parcelDimensions, array $containersWithDims ) {
         if( !$this->checkIfDataIsValid( $parcelDimensions, $containersWithDims ) ) {
             return false;
         }
 
-        /**
-         * If parcel's dimensions don't fit container's dimensions, even if the calculated aria is suitable,
-         * don't create this parcel for the transport.
-         *
-         * For example, if the length of the parcel will be bigger than container's both width and length,
-         * we can't put it inside container.
-         */
         $containerFitIds = null;
         foreach( $containersWithDims as $oneContainerKey => $oneContainerWithDim ) {
 
-            if( ( $parcelDimensions['width'] <= $oneContainerWithDim['width'] ) || ( $parcelDimensions['length'] <= $oneContainerWithDim['width'] ) ) {
-                if( ( $parcelDimensions['width'] <= $oneContainerWithDim['length'] ) || ( $parcelDimensions['length'] <= $oneContainerWithDim['length'] ) ) {
+            if( ( $parcelDimensions['width'] <= $oneContainerWithDim['width'] ) || ( $parcelDimensions['width'] <= $oneContainerWithDim['length'] ) ) {
+                if( ( $parcelDimensions['length'] <= $oneContainerWithDim['length'] ) || ( $parcelDimensions['length'] <= $oneContainerWithDim['width'] ) ) {
 
                     $containerFitIds[] = $oneContainerKey;
                 }
@@ -39,8 +39,8 @@ class PackagingCalculationClass {
         }
 
         $countContainers = sizeof( $containersAreas );
-        $countParcels = sizeof($parcelsAreas); // exponent
-        $finalSize = pow( $countContainers, $countParcels ); // final number of variations of permutations
+        $countParcels = sizeof($parcelsAreas); /** Exponent */
+        $finalSize = pow( $countContainers, $countParcels ); /**  Final variations' number of permutations */
 
         $bestOptionVal = null;
         $bestOptionDescription = '';
@@ -51,37 +51,44 @@ class PackagingCalculationClass {
 //            $currentOptionParcelPlacing = '';
 
             for ( $c = 0; $c < $countParcels; $c++ ) {
-                $index = ceil( $i / pow( $countContainers, $c ) ) % $countContainers;
+                $index = intval( $i / pow( $countContainers, $c ) ) % $countContainers;
 
                 if( isset( $parcelsAreas[ $c ][ $index ] ) ) {
 
-                    // if we already put number of taken space in a container, we sum those numbers
+                    /**
+                     * If we already put an amount of taken space in a container, we sum those numbers
+                     */
                     if( array_key_exists( $i, $packageOptions ) && array_key_exists( $index, $packageOptions[ $i ] ) ) {
-                        $packageOptions[ $i ][ $index ] += $parcelsAreas[ $c ][ $index ];
+                        if( isset( $packageOptions[ $i ][ $index ] ) ) {
+                            $packageOptions[ $i ][ $index ] += $parcelsAreas[ $c ][ $index ];
+                        }
                     } else {
                         $packageOptions[ $i ][ $index ] = $parcelsAreas[ $c ][ $index ];
                     }
 
-                    // if use printing of parcel's placing in which container, provide time latency
-
-//                    $currentOptionParcelPlacing = "parcel with parcelId: $c in container with id: $index;\n\n";
+                    /**
+                     * If we use printing in which container place a parcel; provide time latency
+                     */
+//                    $currentOptionParcelPlacing .= "parcel $c with parcelId: $c in a container with id: $index;\n\n";
                 } else {
                     $packageOptions[ $i ][ $index ] = null;
                 }
             }
 
-            if( !in_array( null, $packageOptions[ $i ] ) ) { // don't do for impossible variants => if we couldn't put big parcel in small container
+            if( !in_array( null, $packageOptions[ $i ] ) ) { /** don't do for impossible variants => if we couldn't put big parcel in small container */
                 foreach( $packageOptions[ $i ] as $usedContainerId => $usedContainer ) {
 
                     /**
                      * Get ratio of taken space on a boat (united area of containers) and fullness (united areas of used space in containers)
                      * space:fullness
+                     *
+                     * If we use even only a part of the container, we round fractions up. Ex: usage of 0.5 of the container means that we already use 1 container.
                      */
-                    $countContainers = ceil( $usedContainer ); // if we use even only a part of the container, we round fractions up. Ex: usage of 0.5 of the container means that we already use 1 container.
-                    $ratio = ( $containersAreas[ $usedContainerId ] * $countContainers ) / ( $containersAreas[ $usedContainerId ] * $usedContainer );
+                    $countRequiredContainers = ceil( $usedContainer );
+                    $ratio = ( $containersAreas[ $usedContainerId ] * $countRequiredContainers ) / ( $containersAreas[ $usedContainerId ] * $usedContainer );
 
                     $currentOptionVal += $ratio;
-                    $currentOptionDescription .= "$countContainers containers with id: $usedContainerId; ";
+                    $currentOptionDescription .= "$countRequiredContainers containers with id: $usedContainerId; ";
 
                     if ( ( $bestOptionVal == null || $bestOptionVal > $currentOptionVal )
                         && $usedContainerId == array_key_last( $packageOptions[ $i ] ) ) {
@@ -92,7 +99,7 @@ class PackagingCalculationClass {
                 }
             }
 
-            // unset checked option to prevent memory leak
+            /** Unset checked option to prevent memory leak */
             unset( $packageOptions[ $i ] );
         }
 
